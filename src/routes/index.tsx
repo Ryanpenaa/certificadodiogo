@@ -74,11 +74,26 @@ function CertificatePage() {
         ctx.font = `700 ${fontSize}px Georgia, "Times New Roman", serif`;
         ctx.fillText(targetName, CERT_W / 2, 557);
 
-        // Data atual na área já reservada no layout original.
+        // Data atual: apaga apenas os traços do modelo e escreve a data na mesma linha de "Data:".
+        // Isso evita a data ficar "flutuando" acima dos campos originais.
+        const dateX = 520;
+        const dateY = 902;
+        const dateW = 300;
+        const dateH = 52;
+
+        // Usa um recorte do próprio fundo claro do certificado para cobrir os traços,
+        // preservando a aparência do papel sem criar um retângulo branco evidente.
+        ctx.drawImage(
+          image,
+          520, 842, dateW, dateH,
+          dateX, dateY - 34, dateW, dateH
+        );
+
         ctx.fillStyle = "#111827";
         ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
         ctx.font = '400 28px Georgia, "Times New Roman", serif';
-        ctx.fillText(issuedDate, 555, 903);
+        ctx.fillText(issuedDate, dateX, dateY);
 
         resolve(canvas);
       };
