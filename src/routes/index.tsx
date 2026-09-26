@@ -120,10 +120,11 @@ function CertificatePage() {
     }, 80);
   };
 
-  const downloadPng = async () => {
+  const downloadPdf = async () => {
     try {
       const canvas = await drawCertificate();
-      const link = document.createElement("a");
+      const { jsPDF } = await import("jspdf");
+
       const safeName = issuedName
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -131,11 +132,19 @@ function CertificatePage() {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
 
-      link.download = `certificado-lavajato-do-diogo-${safeName}.png`;
-      link.href = canvas.toDataURL("image/png", 1);
-      link.click();
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: [CERT_W, CERT_H],
+        hotfixes: ["px_scaling"],
+        compress: true,
+      });
+
+      const imageData = canvas.toDataURL("image/jpeg", 0.96);
+      pdf.addImage(imageData, "JPEG", 0, 0, CERT_W, CERT_H, undefined, "FAST");
+      pdf.save(`certificado-lavajato-do-diogo-${safeName}.pdf`);
     } catch {
-      alert("Não foi possível gerar o certificado. Confira se a imagem base está em public/certificado-base.png.");
+      alert("Não foi possível gerar o PDF. Tente novamente.");
     }
   };
 
@@ -216,11 +225,11 @@ function CertificatePage() {
               CORRIGIR NOME
             </button>
             <button
-              onClick={downloadPng}
+              onClick={downloadPdf}
               className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 font-black text-white transition hover:bg-blue-500"
             >
               <Download className="h-5 w-5" />
-              BAIXAR CERTIFICADO
+              BAIXAR CERTIFICADO EM PDF
             </button>
           </div>
 
