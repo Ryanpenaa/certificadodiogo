@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+Use Vite's compatible Rolldown version rather than a project-wide override, because forcing a newer release can break production bundling.
