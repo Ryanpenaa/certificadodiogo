@@ -3,6 +3,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Download, Pencil, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Emitir certificado | Lavajato do Diogo" },
+      { name: "description", content: "Emita e baixe seu certificado de conclusão do Lavajato do Diogo." },
+      { property: "og:title", content: "Emitir certificado | Lavajato do Diogo" },
+      { property: "og:description", content: "Emita e baixe seu certificado de conclusão do Lavajato do Diogo." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: CertificatePage,
 });
 
