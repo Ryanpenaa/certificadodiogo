@@ -39,6 +39,7 @@ type Access = {
   correctionsUsed: number;
   correctionsRemaining: number;
   issued: boolean;
+  admin?: boolean;
 };
 
 function formatDate(date: Date) {
@@ -135,6 +136,7 @@ function CertificatePage() {
       const found = data.access as Access;
       setAccess(found);
       setEditName(found.name);
+      setEditing(Boolean(found.admin));
     } catch (error) {
       const code = (error as Error & { code?: string }).code;
       if (code === "not_found") {
@@ -189,14 +191,24 @@ function CertificatePage() {
 
   const issueCertificate = async () => {
     if (!access) return;
+
+    const certificateName = access.admin
+      ? editName.trim().replace(/\s+/g, " ")
+      : access.name;
+
+    if (certificateName.length < 3) {
+      setMessage("Digite o nome completo que deve aparecer no certificado.");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     try {
       await callApi({ action: "issue", id: access.id, email: access.email });
-      setIssuedName(access.name);
-      setAccess({ ...access, issued: true });
+      setIssuedName(certificateName);
+      setAccess({ ...access, name: certificateName, issued: true });
       setTimeout(() => {
-        drawCertificate(access.name).catch(() => undefined);
+        drawCertificate(certificateName).catch(() => undefined);
         document.getElementById("certificate-preview")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
@@ -288,14 +300,27 @@ function CertificatePage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-6 w-6 shrink-0 text-emerald-400" />
                 <div>
-                  <p className="font-bold text-white">Compra localizada</p>
+                  <p className="font-bold text-white">{access.admin ? "Acesso administrador" : "Compra localizada"}</p>
                   <p className="mt-1 text-sm text-slate-400">{access.email}</p>
                 </div>
               </div>
 
               <div className="mt-6 rounded-2xl border border-white/10 bg-[#0d1725] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Nome do certificado</p>
-                {editing ? (
+                {access.admin ? (
+                  <div className="mt-3">
+                    <input
+                      value={editName}
+                      onChange={(event) => setEditName(event.target.value)}
+                      maxLength={70}
+                      placeholder="Digite qualquer nome para emitir"
+                      className="h-12 w-full rounded-xl border border-blue-500/30 bg-[#07101c] px-4 text-white outline-none focus:border-blue-500"
+                    />
+                    <p className="mt-3 text-sm text-blue-300">
+                      Modo administrador: você pode emitir quantos certificados precisar.
+                    </p>
+                  </div>
+                ) : editing ? (
                   <div className="mt-3">
                     <input
                       value={editName}
@@ -344,7 +369,7 @@ function CertificatePage() {
 
               <button
                 onClick={issueCertificate}
-                disabled={loading || editing}
+                disabled={loading || (!access.admin && editing) || (access.admin && editName.trim().length < 3)}
                 className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-base font-black tracking-wide transition hover:bg-blue-500 disabled:opacity-50"
               >
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
